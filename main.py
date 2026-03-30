@@ -1,5 +1,4 @@
 """AutoDS AI Assistant - Main entry point."""
-import os
 import sys
 from pathlib import Path
 
