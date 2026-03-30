@@ -148,6 +148,7 @@ sessions/
 reports/
 exports/
 analysis_output/
+autods_sessions/
 *.parquet
 *.h5
 *.hdf5
