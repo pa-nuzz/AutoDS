@@ -1,6 +1,6 @@
 """Data type detection and classification."""
 import re
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 import pandas as pd
 import numpy as np
 
