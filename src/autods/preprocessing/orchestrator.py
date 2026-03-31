@@ -115,13 +115,25 @@ class PreprocessingOrchestrator:
     
     def get_needs_summary(self) -> Dict[str, Any]:
         """Get summary of preprocessing needs."""
+        summary = self.detector.get_summary()
+        all_needs = self.detector.get_needs()
+        
+        # Convert needs to the format the app expects
+        details = []
+        for need in all_needs:
+            details.append({
+                'type': need.get('type', 'Unknown'),
+                'column': need.get('columns', [''])[0] if need.get('columns') else '',
+                'description': need.get('description', ''),
+                'priority': need.get('severity', 'optional'),
+                'code_snippet': need.get('suggested_action', '# No code available')
+            })
+        
         return {
-            'summary': self.detector.get_summary(),
-            'all_needs': self.detector.get_needs(),
-            'by_type': {
-                need_type: self.detector.get_needs_by_type(need_type)
-                for need_type in set(n['type'] for n in self.detector.get_needs())
-            }
+            'required': summary.get('required', 0),
+            'recommended': summary.get('recommended', 0),
+            'optional': summary.get('optional', 0),
+            'details': details
         }
     
     def compare_modes(self) -> Dict[str, Any]:
