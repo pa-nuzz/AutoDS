@@ -21,7 +21,7 @@ from autods.utils.error_handler import ErrorHandler
 from autods.utils.session_manager import SessionManager, auto_save_session
 from autods.utils.checklist import AnalysisChecklist, get_checklist
 from autods.utils.export_generator import ExportGenerator, generate_analysis_exports
-from autods.utils.demo_data import DemoDatasetGenerator, load_demo_dataset
+from autods.utils.demo_data import DemoDatasetGenerator
 
 # Page config
 st.set_page_config(
