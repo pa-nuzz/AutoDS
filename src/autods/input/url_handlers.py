@@ -8,7 +8,19 @@ import requests
 from pathlib import Path
 from typing import Optional, Dict, Any
 from tqdm import tqdm
-import gdown
+
+# Optional imports with fallback
+try:
+    import gdown
+    GDOWN_AVAILABLE = True
+except ImportError:
+    GDOWN_AVAILABLE = False
+
+try:
+    import kaggle
+    KAGGLE_AVAILABLE = True
+except ImportError:
+    KAGGLE_AVAILABLE = False
 
 from ..security.validator import InputValidator, SecurityError, URLClassifier
 
@@ -86,6 +98,10 @@ class KaggleHandler(BaseURLHandler):
     
     def _check_kaggle_auth(self):
         """Check if Kaggle API credentials are available."""
+        if not KAGGLE_AVAILABLE:
+            raise DownloadError(
+                "kaggle package is not installed. Run: pip install kaggle"
+            )
         kaggle_json = Path.home() / '.kaggle' / 'kaggle.json'
         env_vars = os.environ.get('KAGGLE_USERNAME') and os.environ.get('KAGGLE_KEY')
         
@@ -114,7 +130,6 @@ class KaggleHandler(BaseURLHandler):
         
         # Use Kaggle API to download
         try:
-            import kaggle
             kaggle.api.dataset_download_files(
                 dataset_path,
                 path=str(download_path),
@@ -176,6 +191,8 @@ class GoogleDriveHandler(BaseURLHandler):
         dest_path = self.download_dir / output
         
         # Download using gdown
+        if not GDOWN_AVAILABLE:
+            raise DownloadError("gdown is not installed. Run: pip install gdown")
         try:
             gdown.download(id=file_id, output=str(dest_path), quiet=False, fuzzy=True)
         except Exception as e:

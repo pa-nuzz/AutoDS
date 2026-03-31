@@ -11,6 +11,39 @@ streamlit run app.py
 
 The app will open at `http://localhost:8501`
 
+## Python Library Usage
+
+### Install
+```bash
+pip install autods
+# or from source:
+pip install -e ".[full]"
+```
+
+### One-liner analysis
+```python
+import pandas as pd
+from autods import AutoDS
+
+df = pd.read_csv('data.csv')
+ads = AutoDS(df, target='churn')
+ads.analyze().preprocess().train()
+print(ads.summary())
+ads.report()  # saves HTML, CSV, notebook to ./autods_output/
+```
+
+### Individual tools
+```python
+from autods import auto_preprocess, run_complete_analysis
+
+# Just preprocess
+df_clean = auto_preprocess(df, target='churn', mode='balanced')
+
+# Full pipeline to files
+results = run_complete_analysis(df, target='churn', output_dir='reports')
+print(results['exported_files'])
+```
+
 ## 📋 All 6 Phases Complete
 
 ### Phase 1: Input Handling & Data Fetching

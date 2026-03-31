@@ -99,7 +99,12 @@ class StatisticalProfiler:
             # Entropy (measure of imbalance)
             vc = series.value_counts(normalize=True)
             stats_dict['entropy'] = float(-(vc * np.log2(vc + 1e-10)).sum())
-            stats_dict['balance_score'] = float(1 - (vc.max() - 1/vc.shape[0]) / (1 - 1/vc.shape[0])) if len(vc) > 1 else 0
+            n_cats = len(vc)
+            if n_cats > 1:
+                balance = 1 - (vc.max() - 1/n_cats) / max(1 - 1/n_cats, 1e-10)
+                stats_dict['balance_score'] = float(max(0.0, min(1.0, balance)))
+            else:
+                stats_dict['balance_score'] = 0.0
         
         elif col_type == DataTypeDetector.TEXT:
             non_null = series.dropna().astype(str)

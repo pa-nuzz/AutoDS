@@ -13,6 +13,15 @@ from sklearn.preprocessing import (
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
+import sklearn
+
+def _get_onehot_encoder():
+    """Get OneHotEncoder with correct sparse parameter for sklearn version."""
+    major, minor = [int(x) for x in sklearn.__version__.split('.')[:2]]
+    if (major, minor) >= (1, 2):
+        return OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+    else:
+        return OneHotEncoder(handle_unknown='ignore', sparse=False)
 
 from .detector import PreprocessingDetector, PreprocessingNeed, NeedSeverity
 
@@ -390,10 +399,10 @@ class PreprocessingPipeline:
     def _get_encoder(self):
         """Get encoder based on strategy."""
         encoders = {
-            'onehot': OneHotEncoder(handle_unknown='ignore', sparse_output=False),
+            'onehot': _get_onehot_encoder(),
             'ordinal': OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1),
         }
-        return encoders.get(self.categorical_strategy, OneHotEncoder())
+        return encoders.get(self.categorical_strategy, _get_onehot_encoder())
     
     def fit_transform(self, df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]) -> np.ndarray:
         """Fit and transform data."""

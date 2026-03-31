@@ -1,4 +1,5 @@
 """Security module for input validation and sanitization."""
+import logging
 import os
 import re
 import mimetypes
@@ -7,6 +8,8 @@ from urllib.parse import urlparse, unquote
 from typing import Optional, List, Set
 import validators
 import pathvalidate
+
+logger = logging.getLogger(__name__)
 
 
 class SecurityError(Exception):
@@ -97,7 +100,7 @@ class InputValidator:
         
         # Only allow http/https
         if parsed.scheme not in ('http', 'https'):
-            raise SecurityError(f"URL scheme not allowed: {parsed.scheme}")
+            raise SecurityError(f"URL scheme not allowed: {parsed.scheme}. Only http/https are permitted.")
         
         # Block localhost and private IPs
         hostname = parsed.hostname or ''
@@ -212,7 +215,7 @@ class InputValidator:
             for pattern in text_suspicious:
                 if pattern in header.lower():
                     # Could be a false positive in data, log but don't block
-                    logging.warning(
+                    logger.warning(
                         f"Suspicious pattern '{pattern.decode()}' found in {file_path}"
                     )
         

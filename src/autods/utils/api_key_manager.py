@@ -241,66 +241,31 @@ class SecureLLMClient:
         
         return None, None
     
-    def call_api(self, endpoint: str, payload: Dict[str, Any], 
-                 provider: Optional[APIProvider] = None) -> Dict[str, Any]:
-        """Make an API call with automatic retry and provider fallback.
-        
-        On failure, tries:
-        1. Next key for same provider
-        2. Fallback provider
-        
-        Never exposes the API key in exceptions.
-        """
-        from .ai_enhancement import LLMClient
-        
+    def generate(self, prompt: str, provider: Optional[APIProvider] = None) -> str:
+        """Generate text with automatic key rotation and provider fallback."""
         current_provider = provider or self.preferred_provider
         max_retries = 3
         last_error = None
         
         for attempt in range(max_retries):
             prov, key = self._get_working_key(current_provider)
-            
             if not key:
                 raise RuntimeError(
-                    "No API keys available. "
-                    "Please check your .env file configuration."
+                    "No API keys available. Please check your .env file configuration."
                 )
-            
             try:
-                # Create client with this key
-                client = LLMClient(
-                    api_key=key.key,
-                    provider=key.provider.value
-                )
-                
-                # Make the call
-                result = client.call_api(endpoint, payload)
-                
-                # Success - reset fail count
+                from ..analysis.ai_enhancement import LLMClient
+                client = LLMClient(api_key=key.key, provider=key.provider.value)
+                result = client.generate(prompt)
                 key.fail_count = 0
-                
                 return result
-                
             except Exception as e:
                 last_error = e
-                error_msg = str(e)
-                
-                # Mark key as failed (but don't log the key)
-                self.key_manager.mark_key_failed(key, error_msg[:100])
-                
-                # Try next key/provider
+                self.key_manager.mark_key_failed(key, str(e)[:100])
                 current_provider = self.key_manager.get_fallback_provider(prov)
-                
-                logger.warning(
-                    f"API call failed for {prov.value} (attempt {attempt + 1}): "
-                    f"{error_msg[:100]}"
-                )
+                logger.warning(f"API call failed (attempt {attempt + 1}): {str(e)[:100]}")
         
-        # All retries failed
-        raise RuntimeError(
-            f"All API attempts failed. Last error: {str(last_error)[:200]}. "
-            "Please check your API keys and network connection."
-        )
+        raise RuntimeError(f"All API attempts failed. Last error: {str(last_error)[:200]}")
 
 
 def validate_no_keys_in_logs() -> bool:

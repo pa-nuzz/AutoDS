@@ -5,8 +5,19 @@ from pathlib import Path
 from typing import Union, Optional, Dict, Any, List
 import pandas as pd
 import numpy as np
-from PIL import Image
-import librosa
+
+# Optional imports with fallback
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+
+try:
+    import librosa
+    LIBROSA_AVAILABLE = True
+except ImportError:
+    LIBROSA_AVAILABLE = False
 
 from ..security.validator import InputValidator, SecurityError
 
@@ -103,7 +114,7 @@ class FileHandler:
             result['shape'] = result['data'].shape if hasattr(result['data'], 'shape') else None
         elif data_type == DataType.AUDIO:
             result['data'], result['sample_rate'] = self._load_audio(file_path, **kwargs)
-            result['duration'] = librosa.get_duration(y=result['data'], sr=result['sample_rate'])
+            result['duration'] = len(result['data']) / result['sample_rate']
         else:
             raise DataLoadError(f"Unsupported file type: {file_path}")
         
@@ -167,6 +178,8 @@ class FileHandler:
     
     def _load_image(self, file_path: str, **kwargs) -> np.ndarray:
         """Load image files."""
+        if not PIL_AVAILABLE:
+            raise DataLoadError("Pillow is not installed. Run: pip install Pillow")
         try:
             img = Image.open(file_path)
             # Convert to RGB if necessary
@@ -178,6 +191,8 @@ class FileHandler:
     
     def _load_audio(self, file_path: str, **kwargs) -> tuple:
         """Load audio files. Returns (audio_data, sample_rate)."""
+        if not LIBROSA_AVAILABLE:
+            raise DataLoadError("librosa is not installed. Run: pip install librosa")
         try:
             sr = kwargs.get('sr', None)  # None preserves native sample rate
             audio, sample_rate = librosa.load(file_path, sr=sr, mono=kwargs.get('mono', True))

@@ -263,7 +263,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 # For columns with ≤10 categories
 low_cardinality_cols = {low_card}
-encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
 encoded = encoder.fit_transform(df[low_cardinality_cols])
 
 # Create DataFrame with encoded features
