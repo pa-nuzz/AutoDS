@@ -327,6 +327,11 @@ class DemoDatasetGenerator:
 
 
 # Convenience functions for quick access
+def load_demo_dataset(name: str, save_path=None):
+    """Module-level function to load a demo dataset by name."""
+    return DemoDatasetGenerator.load_demo_dataset(name, save_path)
+
+
 def load_churn_demo() -> pd.DataFrame:
     """Load customer churn demo dataset."""
     return DemoDatasetGenerator.generate_customer_churn()

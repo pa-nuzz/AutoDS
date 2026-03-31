@@ -17,11 +17,11 @@ import sklearn
 
 def _get_onehot_encoder():
     """Get OneHotEncoder with correct sparse parameter for sklearn version."""
-    major, minor = [int(x) for x in sklearn.__version__.split('.')[:2]]
-    if (major, minor) >= (1, 2):
-        return OneHotEncoder(handle_unknown='ignore', sparse_output=False)
-    else:
-        return OneHotEncoder(handle_unknown='ignore', sparse=False)
+    import sklearn.preprocessing as skp
+    ohe = skp.OneHotEncoder(handle_unknown='ignore')
+    if hasattr(ohe, 'sparse_output'):
+        return skp.OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+    return skp.OneHotEncoder(handle_unknown='ignore', sparse=False)
 
 from .detector import PreprocessingDetector, PreprocessingNeed, NeedSeverity
 

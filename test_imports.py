@@ -38,11 +38,11 @@ except Exception as e:
     errors.append(("PreprocessingOrchestrator", str(e)))
 
 try:
-    from autods.preprocessing.pipeline import AutoPreprocessor
+    from autods.preprocessing.auto_processor import AutoPreprocessor
     print("  ✓ AutoPreprocessor")
 except Exception as e:
     print(f"  ✗ AutoPreprocessor: {e}")
-    errors.append(("AutoPreprocessor", str(e)))
+    errors.append(("preprocessing.auto_processor", str(e)))
 
 # Test 4: Modeling Imports
 print("\n[4] Testing Modeling Imports...")

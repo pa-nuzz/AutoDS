@@ -177,13 +177,15 @@ class TaskDetector:
         target_info = self.type_detector.columns_info.get(self.target_column, {})
         target_type = target_info.get('type')
         
+        # Handle numeric types (regression)
         if target_type in ['numeric_continuous', 'numeric_discrete']:
             self.task_info = {
                 'task_type': MLTaskType.REGRESSION,
                 'target_type': 'numeric',
                 'description': 'Regression task - predict continuous value'
             }
-        elif target_type in ['categorical_nominal', 'boolean']:
+        # Handle categorical/boolean types (classification)
+        elif target_type in ['categorical_nominal', 'boolean', 'categorical_ordinal']:
             unique_count = self.df[self.target_column].nunique()
             if unique_count == 2:
                 self.task_info = {
@@ -198,13 +200,35 @@ class TaskDetector:
                     'n_classes': unique_count,
                     'description': f'Multiclass classification task ({unique_count} classes)'
                 }
-        elif target_type == 'categorical_ordinal':
+        # Handle text columns that might be categorical targets
+        elif target_type == 'text':
             unique_count = self.df[self.target_column].nunique()
+            if unique_count <= 100:  # Likely categorical
+                if unique_count == 2:
+                    self.task_info = {
+                        'task_type': MLTaskType.BINARY_CLASSIFICATION,
+                        'target_type': 'binary',
+                        'description': 'Binary classification task (text labels)'
+                    }
+                else:
+                    self.task_info = {
+                        'task_type': MLTaskType.MULTICLASS_CLASSIFICATION,
+                        'target_type': 'multiclass',
+                        'n_classes': unique_count,
+                        'description': f'Multiclass classification task ({unique_count} text classes)'
+                    }
+            else:
+                self.task_info = {
+                    'task_type': MLTaskType.UNKNOWN,
+                    'target_type': target_type,
+                    'description': f'Text target with too many unique values ({unique_count})'
+                }
+        # ID and datetime columns shouldn't be targets but handle gracefully
+        elif target_type in ['id', 'datetime']:
             self.task_info = {
-                'task_type': MLTaskType.MULTICLASS_CLASSIFICATION,
-                'target_type': 'ordinal',
-                'n_classes': unique_count,
-                'description': f'Ordinal classification task ({unique_count} classes)'
+                'task_type': MLTaskType.REGRESSION if target_type == 'datetime' else MLTaskType.UNKNOWN,
+                'target_type': target_type,
+                'description': f'Unusual target type: {target_type}'
             }
         else:
             self.task_info = {

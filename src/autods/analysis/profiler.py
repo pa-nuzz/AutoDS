@@ -16,6 +16,11 @@ class StatisticalProfiler:
         self.profile: Dict[str, Any] = {}
         self._generate_profile()
     
+    def generate_profile(self) -> Dict[str, Any]:
+        """Public method to generate and return profile."""
+        self._generate_profile()
+        return self.profile
+
     def _generate_profile(self):
         """Generate complete profile."""
         self.profile = {

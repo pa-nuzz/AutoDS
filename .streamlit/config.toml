@@ -1,0 +1,10 @@
+[server]
+maxUploadSize = 8192  # 8GB in MB
+maxMessageSize = 8192  # 8GB in MB
+
+[runner]
+# Allow large file uploads
+enforceSessionStateConstraints = false
+
+[browser]
+gatherUsageStats = false

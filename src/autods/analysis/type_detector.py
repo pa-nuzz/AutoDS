@@ -52,7 +52,7 @@ class DataTypeDetector:
             info['subtype'] = 'datetime'
             return info
         
-        # Check for boolean
+        # Check for boolean  
         if self._is_boolean(series):
             info['type'] = self.BOOLEAN
             info['subtype'] = 'boolean'
@@ -158,9 +158,14 @@ class DataTypeDetector:
         unique_ratio = series.nunique() / len(series)
         
         # Check for integers with low unique values (likely categorical/ordinal)
-        if pd.api.types.is_integer_dtype(series) and series.nunique() <= 20:
-            info['type'] = self.CATEGORICAL_ORDINAL
-            info['subtype'] = 'ordinal_numeric'
+        if pd.api.types.is_integer_dtype(series):
+            if series.nunique() <= 20:
+                info['type'] = self.CATEGORICAL_ORDINAL
+                info['subtype'] = 'ordinal_numeric'
+            else:
+                # Many unique integers - discrete numeric
+                info['type'] = self.NUMERIC_DISCRETE
+                info['subtype'] = 'discrete'
         elif unique_ratio < 0.05 and series.nunique() <= 50:
             # Low cardinality numeric - might be ordinal encoded
             info['type'] = self.CATEGORICAL_ORDINAL

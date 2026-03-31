@@ -121,7 +121,16 @@ class TabularAutoTrainer:
         elif self.is_regression:
             return ['linear_regression', 'ridge', 'random_forest', 'xgboost', 'lightgbm']
         else:
-            return []
+            # Fallback: try to detect from target column directly
+            target_series = self.df[self.target_column]
+            if target_series.dtype == 'object' or target_series.nunique() <= 10:
+                # Likely classification
+                self.is_classification = True
+                return ['logistic_regression', 'random_forest', 'xgboost', 'lightgbm']
+            else:
+                # Likely regression
+                self.is_regression = True
+                return ['linear_regression', 'ridge', 'random_forest', 'xgboost', 'lightgbm']
     
     def _train_model(self, model_name: str) -> Optional[Dict[str, Any]]:
         """Train a single model and return results."""
